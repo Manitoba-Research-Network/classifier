@@ -169,3 +169,15 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# data
+data/*
+!data/README.md
+
+# pretrained models
+models-pretrained/*
+!models-pretrained/README.md
+
+# models
+models/*
+!models/README.md
