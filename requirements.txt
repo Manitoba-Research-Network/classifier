@@ -1,0 +1,13 @@
+jupyterlab
+ipykernel
+ipywidgets
+datasets
+torch
+torchvision
+torchaudio
+transformers
+peft
+evaluate
+trl
+scikit-learn
+python-dotenv

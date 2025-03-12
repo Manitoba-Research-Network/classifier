@@ -173,6 +173,7 @@ cython_debug/
 # data
 data/*
 !data/README.md
+!data/.gitignore
 
 # pretrained models
 models-pretrained/*
