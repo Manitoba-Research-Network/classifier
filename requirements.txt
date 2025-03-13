@@ -11,3 +11,4 @@ evaluate
 trl
 scikit-learn
 python-dotenv
+pathlib
