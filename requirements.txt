@@ -14,4 +14,3 @@ python-dotenv
 pathlib
 bitsandbytes
 sentencepiece
-"transformers[sentencepiece]"
