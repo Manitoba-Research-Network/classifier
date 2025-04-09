@@ -14,3 +14,4 @@ python-dotenv
 pathlib
 bitsandbytes
 sentencepiece
+yaml
