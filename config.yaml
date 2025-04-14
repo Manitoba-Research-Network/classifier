@@ -4,6 +4,7 @@ device: cuda #cuda:0 or cpu
 data_path: data/out.jsonl # Path to the data file
 output_dir: output # Path to the output directory
 random_seed: 42 # Random seed for reproducibility
+max_length: 5000 # Maximum sequence length for the model
 
 learning_rate: 1e-4 # Learning rate for the optimizer
 batch_size: 4 # Batch size for training

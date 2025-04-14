@@ -9,16 +9,11 @@ from peft import LoraConfig, get_peft_model, PeftModel
 from transformers import (
     AutoModelForSequenceClassification,
     AutoTokenizer,
-    BitsAndBytesConfig,
     TrainingArguments,
-    LlamaModel,
-    AutoConfig,
     DataCollatorWithPadding,
     Trainer,
     TrainingArguments,
-    EarlyStoppingCallback
 )
-from trl import SFTTrainer
 from sklearn.model_selection import train_test_split
 import numpy as np
 from dotenv import load_dotenv
@@ -34,23 +29,21 @@ LR = 1e-4
 BATCH_SIZE = 4
 EPOCHS = 1
 OUTPUT_DIR = "output"
+MAX_LENGTH = 5000
 
 # label maps
 id2label = {0: "Normal", 1: "Suspicious"}
 label2id = {v:k for k,v in id2label.items()}
 
-#load_dotenv()
-#torch.cuda.empty_cache()
-#torch.backends.cudnn.benchmark = True
-#torch.cuda.reset_peak_memory_stats()
-
+# load the config.yaml file
 def load_config():
     with open("config.yaml", "r") as f:
         config = yaml.safe_load(f)
     return config
 
+# set the config values
 def set_config(config):
-    global MODEL_NAME, DATA_PATH, MODEL_DIR, TOKENIZER_DIR, RANDOM_SEED, LR, BATCH_SIZE, EPOCHS, OUTPUT_DIR
+    global MODEL_NAME, DATA_PATH, MODEL_DIR, TOKENIZER_DIR, RANDOM_SEED, LR, BATCH_SIZE, EPOCHS, OUTPUT_DIR, MAX_LENGTH
     if config["model_name"]:
         MODEL_NAME = config["model_name"]
     if config["data_path"]:
@@ -65,8 +58,11 @@ def set_config(config):
         EPOCHS = int(config["epochs"])
     if config["output_dir"]:
         OUTPUT_DIR = config["output_dir"]
+    if config["max_length"]:
+        MAX_LENGTH = int(config["max_length"])
     print("Config loaded.")
 
+# download the pretrained model from huggingface
 def download_pretrained_model(path):
     load_dotenv()
     login(token=os.getenv("hugging_face_PAG"))
@@ -90,6 +86,7 @@ def download_pretrained_model(path):
     tokenizer.save_pretrained(path)
     return model, tokenizer
 
+# load the pretrained model from local path
 def load_pretrained_model(path):
     pretrained_model = AutoModelForSequenceClassification.from_pretrained(
                                                                 path,
@@ -105,6 +102,7 @@ def load_pretrained_model(path):
         pretrained_model.resize_token_embeddings(len(tokenizer))
     return pretrained_model, tokenizer
 
+# tokenize the dataset
 def tokenize_function(examples, tokenizer):
     text = examples["text"]
 
@@ -113,12 +111,13 @@ def tokenize_function(examples, tokenizer):
         text,
         truncation=True, 
         padding="max_length", 
-        max_length=5000,
+        max_length=MAX_LENGTH,
         return_tensors="pt"
     )
 
     return encoding
 
+# load the dataset
 def load_output_dataset(path):
     dataset = load_dataset("json", data_files=path)
     dataset = dataset["train"].train_test_split(test_size=0.2, seed=RANDOM_SEED)
@@ -128,6 +127,7 @@ def load_output_dataset(path):
     print(f"Dataset structure: {dataset}")
     return dataset
 
+# clear the cuda cache
 def clear_cache():
     torch.cuda.empty_cache()
     torch.backends.cudnn.benchmark = True

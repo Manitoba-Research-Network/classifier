@@ -2,7 +2,7 @@ jupyterlab
 ipykernel
 ipywidgets
 datasets
-torch
+torch # ==2.6.0+cu118, this is the version that works with my GPU
 torchvision
 torchaudio
 transformers
@@ -14,4 +14,4 @@ python-dotenv
 pathlib
 bitsandbytes
 sentencepiece
-yaml
+pyyaml
