@@ -45,9 +45,7 @@ hugging_face_PAG = <paste your hugging face token here>
 
 ### Running
 
-```bash
-python3 classifier.py
-```
+```python3 classifier.py```
 
 ## Model Usage
 
