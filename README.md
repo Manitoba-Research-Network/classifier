@@ -60,6 +60,9 @@ python3 classifier.py
 id2label = {0: "Normal", 1: "Suspicious"}
 label2id = {v:k for k,v in id2label.items()}
 
+# device setup
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 # load the trained model and tokenizer from the output path
 model = AutoModelForSequenceClassification.from_pretrained(
     trained_model_path,
