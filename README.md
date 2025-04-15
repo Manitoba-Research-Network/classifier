@@ -52,35 +52,5 @@ python3 classifier.py
 ## Model Usage
 
 - the output folder will contains model file and the model tokenizer
-
-- the prediction usage is:
-
-```python
-# label maps
-id2label = {0: "Normal", 1: "Suspicious"}
-label2id = {v:k for k,v in id2label.items()}
-
-# device setup
-DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-# load the trained model and tokenizer from the output path
-model = AutoModelForSequenceClassification.from_pretrained(
-    trained_model_path,
-    num_labels=len(id2label),
-    id2label=id2label,
-    label2id=label2id).to(DEVICE)
-tokenizer = AutoTokenizer.from_pretrained(trained_tokenizer_path, add_prefix_space=True)
-
-# add pad token if none exists
-if tokenizer.pad_token is None:
-    tokenizer.add_special_tokens({"pad_token": "[PAD]"})
-    pretrained_model.resize_token_embeddings(len(tokenizer))
-
-# input the text to the model
-inputs = tokenizer.encode(text, return_tensors="pt").to(DEVICE)
-# get the logits from the trained model
-with torch.no_grad():
-  logits = model(inputs).logits
-# get the output label
-predictions = torch.argmax(logits)
-```
+- the example usage of the trained model could be seen in `example.py`
+  - it will load the model and tokenizer from the output directory

@@ -43,7 +43,7 @@ def load_config():
 
 # set the config values
 def set_config(config):
-    global MODEL_NAME, DATA_PATH, MODEL_DIR, TOKENIZER_DIR, RANDOM_SEED, LR, BATCH_SIZE, EPOCHS, OUTPUT_DIR, MAX_LENGTH
+    global MODEL_NAME, DATA_PATH, RANDOM_SEED, LR, BATCH_SIZE, EPOCHS, OUTPUT_DIR, MAX_LENGTH, DEVICE
     if config["model_name"]:
         MODEL_NAME = config["model_name"]
     if config["data_path"]:
@@ -60,6 +60,8 @@ def set_config(config):
         OUTPUT_DIR = config["output_dir"]
     if config["max_length"]:
         MAX_LENGTH = int(config["max_length"])
+    if config["device"]:
+        DEVICE = config["device"]
     print("Config loaded.")
 
 # download the pretrained model from huggingface
