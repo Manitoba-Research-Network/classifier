@@ -1,6 +1,7 @@
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from datasets import load_dataset
+from peft import PeftModel, PeftConfig
 import yaml
 
 DEVICE = "cpu"
@@ -58,11 +59,15 @@ if __name__ == "__main__":
     clear_cache()
 
     # Load the model and tokenizer from the output directory
-    model = AutoModelForSequenceClassification.from_pretrained(
-        OUTPUT_DIR,
+    base_model = AutoModelForSequenceClassification.from_pretrained(
+        MODEL_NAME,
         num_labels=len(id2label),
         id2label=id2label,
-        label2id=label2id).to(DEVICE)
+        label2id=label2id)
+    
+    config = PeftConfig.from_pretrained(OUTPUT_DIR)
+
+    model = PeftModel.from_pretrained(base_model, OUTPUT_DIR, peft_config=config).to(DEVICE)
     
     tokenizer = AutoTokenizer.from_pretrained(OUTPUT_DIR, add_prefix_space=True)
 
@@ -88,7 +93,9 @@ if __name__ == "__main__":
         try:
             inputs = tokenizer.encode(text, return_tensors="pt").to(DEVICE)
             with torch.no_grad():
+                # the raw logits of the model
                 logits = model(inputs).logits
+            # the prediction 
             predictions = torch.argmax(logits)
             if predictions == entry["label"]:
                 isCorrect_trained += 1
