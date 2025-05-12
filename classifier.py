@@ -15,6 +15,7 @@ from transformers import (
     TrainingArguments,
 )
 import os
+import argparse
 
 from helpers import model as helpers
 
@@ -164,5 +165,24 @@ if __name__ == "__main__":
     config = load_config()
     # set the config values 
     set_config(config)
+
+    # * setup argparse
+    parser = argparse.ArgumentParser(
+        prog='classifier',
+        description='basic training script for classifying siem events'
+    )
+    parser.add_argument('-i', '--input',
+                        help='path to input data',
+                        type=str,
+                        default=DATA_PATH)
+    parser.add_argument('-o', '--output',
+                        help='path to output model',
+                        type=str,
+                        default=OUTPUT_DIR)
+    # override defaults
+    args = parser.parse_args()
+
+    DATA_PATH = args.input
+    OUTPUT_DIR = args.output
 
     run()
