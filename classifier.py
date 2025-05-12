@@ -77,15 +77,14 @@ def clear_cache():
     torch.backends.cudnn.benchmark = True
     torch.cuda.reset_peak_memory_stats()
 
-if __name__ == "__main__":
-    # read the config.yaml file
-    config = load_config()
-    # set the config values 
-    set_config(config)
+
+def run():
+    """
+    sets up and runs the trainer
+    """
 
     # clear cache
     clear_cache()
-
     # load pretrained model
     path = os.path.join(MODEL_NAME)
     print("Loading pretrained model...")
@@ -95,19 +94,15 @@ if __name__ == "__main__":
         print("Error loading pretrained model.")
         print(e)
         exit(1)
-    
     # load the dataset
     print("Loading dataset...")
     dataset = load_output_dataset(DATA_PATH, RANDOM_SEED)
-
     # data collator
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-
     # tokenize the dataset
     print("Tokenizing dataset...")
     tokenized_dataset = dataset.map(lambda x: helpers.tokenize_function(x, tokenizer, MAX_LENGTH), batched=True)
     print(f"Tokenized dataset structure: {tokenized_dataset}")
-
     # training arguments
     peft_config = LoraConfig(
         task_type="SEQ_CLS",
@@ -118,24 +113,21 @@ if __name__ == "__main__":
     )
     print("PEFT config loaded.")
     print(peft_config)
-
     model = get_peft_model(pre_trained_model, peft_config)
     model.print_trainable_parameters()
     print("Model loaded.")
-
     # Explicitly set padding token in the model config
     model.config.pad_token_id = tokenizer.pad_token_id
-
     # define training arguments
     training_args = TrainingArguments(
-        output_dir= MODEL_NAME + "-lora-text-classification",
+        output_dir=MODEL_NAME + "-lora-text-classification",
         learning_rate=LR,
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,
         gradient_accumulation_steps=4,
         num_train_epochs=EPOCHS,
         weight_decay=0.01,
-        eval_strategy = "epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=False,
         gradient_checkpointing=True,
@@ -144,7 +136,6 @@ if __name__ == "__main__":
         seed=RANDOM_SEED,
         label_names=["label"]
     )
-
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -153,15 +144,12 @@ if __name__ == "__main__":
         tokenizer=tokenizer,
         data_collator=data_collator
     )
-
     print("Trainer created.")
-
     # train the model
     print("Training the model...")
     trainer.train()
     print("Model trained.")
-
-    #save the model
+    # save the model
     print("Saving the model...")
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
@@ -169,3 +157,12 @@ if __name__ == "__main__":
     trainer.save_state()
     tokenizer.save_pretrained(OUTPUT_DIR)
     print("Model saved.")
+
+
+if __name__ == "__main__":
+    # read the config.yaml file
+    config = load_config()
+    # set the config values 
+    set_config(config)
+
+    run()
