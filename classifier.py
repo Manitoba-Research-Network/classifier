@@ -16,7 +16,7 @@ from transformers import (
 )
 import os
 
-from helpers import model
+from helpers import model as helpers
 
 DEVICE = "cpu"
 MODEL_NAME = "meta-llama/Llama-3.2-1B" 
@@ -31,6 +31,16 @@ MAX_LENGTH = 5000
 # label maps
 id2label = {0: "Normal", 1: "Suspicious"}
 label2id = {v:k for k,v in id2label.items()}
+
+# load the dataset
+def load_output_dataset(path, random_seed):
+    dataset = load_dataset("json", data_files=path)
+    dataset = dataset["train"].train_test_split(test_size=0.2, seed=random_seed)
+    print("Dataset loaded.")
+    print(f"Train size: {len(dataset['train'])}")
+    print(f"Test size: {len(dataset['test'])}")
+    print(f"Dataset structure: {dataset}")
+    return dataset
 
 # load the config.yaml file
 def load_config():
@@ -61,31 +71,6 @@ def set_config(config):
         DEVICE = config["device"]
     print("Config loaded.")
 
-# tokenize the dataset
-def tokenize_function(examples, tokenizer):
-    text = examples["text"]
-
-    # Tokenize texts in batch mode
-    encoding = tokenizer(
-        text,
-        truncation=True, 
-        padding="max_length", 
-        max_length=MAX_LENGTH,
-        return_tensors="pt"
-    )
-
-    return encoding
-
-# load the dataset
-def load_output_dataset(path):
-    dataset = load_dataset("json", data_files=path)
-    dataset = dataset["train"].train_test_split(test_size=0.2, seed=RANDOM_SEED)
-    print("Dataset loaded.")
-    print(f"Train size: {len(dataset['train'])}")
-    print(f"Test size: {len(dataset['test'])}")
-    print(f"Dataset structure: {dataset}")
-    return dataset
-
 # clear the cuda cache
 def clear_cache():
     torch.cuda.empty_cache()
@@ -105,7 +90,7 @@ if __name__ == "__main__":
     path = os.path.join(MODEL_NAME)
     print("Loading pretrained model...")
     try:
-        pre_trained_model, tokenizer = model.load_model(path, DEVICE, label2id)
+        pre_trained_model, tokenizer = helpers.load_model(path, DEVICE, label2id)
     except Exception as e:
         print("Error loading pretrained model.")
         print(e)
@@ -113,14 +98,14 @@ if __name__ == "__main__":
     
     # load the dataset
     print("Loading dataset...")
-    dataset = load_output_dataset(DATA_PATH)
+    dataset = load_output_dataset(DATA_PATH, RANDOM_SEED)
 
     # data collator
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     # tokenize the dataset
     print("Tokenizing dataset...")
-    tokenized_dataset = dataset.map(lambda x: tokenize_function(x, tokenizer), batched=True)
+    tokenized_dataset = dataset.map(lambda x: helpers.tokenize_function(x, tokenizer, MAX_LENGTH), batched=True)
     print(f"Tokenized dataset structure: {tokenized_dataset}")
 
     # training arguments

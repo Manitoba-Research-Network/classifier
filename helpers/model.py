@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import os
 from huggingface_hub import login
@@ -36,4 +35,19 @@ def download_model(path:str, device:str, labels:dict, model_name:str, token:str)
     model.save_pretrained(path)
     tokenizer.save_pretrained(path)
 
+
+# tokenize the dataset
+def tokenize_function(examples, tokenizer, max_length):
+    text = examples["text"]
+
+    # Tokenize texts in batch mode
+    encoding = tokenizer(
+        text,
+        truncation=True,
+        padding="max_length",
+        max_length=max_length,
+        return_tensors="pt"
+    )
+
+    return encoding
 
