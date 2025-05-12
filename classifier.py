@@ -14,12 +14,9 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
-from sklearn.model_selection import train_test_split
-import numpy as np
-from dotenv import load_dotenv
 import os
-from pathlib import Path
-import random
+
+from helpers import model
 
 DEVICE = "cpu"
 MODEL_NAME = "meta-llama/Llama-3.2-1B" 
@@ -64,46 +61,6 @@ def set_config(config):
         DEVICE = config["device"]
     print("Config loaded.")
 
-# download the pretrained model from huggingface
-def download_pretrained_model(path):
-    load_dotenv()
-    login(token=os.getenv("hugging_face_PAG"))
-    model = AutoModelForSequenceClassification.from_pretrained(
-                                                                MODEL_NAME, 
-                                                                num_labels=len(id2label),
-                                                                id2label=id2label,
-                                                                label2id=label2id
-                                                                ).to(DEVICE)
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, add_prefix_space=True)
-
-    # add pad token if none exists
-    if tokenizer.pad_token is None:
-        tokenizer.add_special_tokens({"pad_token": "[PAD]"})
-        model.resize_token_embeddings(len(tokenizer))\
-      
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-    model.save_pretrained(path)
-    tokenizer.save_pretrained(path)
-    return model, tokenizer
-
-# load the pretrained model from local path
-def load_pretrained_model(path):
-    pretrained_model = AutoModelForSequenceClassification.from_pretrained(
-                                                                path,
-                                                                num_labels=len(id2label),
-                                                                id2label=id2label,
-                                                                label2id=label2id
-                                                                ).to(DEVICE)
-    tokenizer = AutoTokenizer.from_pretrained(path, add_prefix_space=True)
-
-    # add pad token if none exists
-    if tokenizer.pad_token is None:
-        tokenizer.add_special_tokens({"pad_token": "[PAD]"})
-        pretrained_model.resize_token_embeddings(len(tokenizer))
-    return pretrained_model, tokenizer
-
 # tokenize the dataset
 def tokenize_function(examples, tokenizer):
     text = examples["text"]
@@ -136,7 +93,6 @@ def clear_cache():
     torch.cuda.reset_peak_memory_stats()
 
 if __name__ == "__main__":
-    pre_trained_model, tokenizer = None, None
     # read the config.yaml file
     config = load_config()
     # set the config values 
@@ -145,15 +101,15 @@ if __name__ == "__main__":
     # clear cache
     clear_cache()
 
-    # load or download the pretrained model
-    pretrained_exist = config["pretrained_model_exists"]
+    # load pretrained model
     path = os.path.join(MODEL_NAME)
-    if pretrained_exist == False:
-        print("Downloading pretrained model...")
-        pre_trained_model, tokenizer = download_pretrained_model(path)
-    else:
-        print("Loading pretrained model...")
-        pre_trained_model, tokenizer = load_pretrained_model(path)
+    print("Loading pretrained model...")
+    try:
+        pre_trained_model, tokenizer = model.load_model(path, DEVICE, label2id)
+    except Exception as e:
+        print("Error loading pretrained model.")
+        print(e)
+        exit(1)
     
     # load the dataset
     print("Loading dataset...")
