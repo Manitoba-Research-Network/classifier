@@ -1,6 +1,7 @@
 # elastic_data_classifier
 
 Trainer script for training Llama model with given config setting and data, then output the model to specific directory.
+Originaly forked from: https://github.com/IPG5/classifier
 
 ## Trainer Script Usage
 
