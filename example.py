@@ -39,10 +39,8 @@ def clear_cache():
 # load the dataset
 def load_output_dataset(path):
     dataset = load_dataset("json", data_files=path)
-    dataset = dataset["train"].train_test_split(test_size=0.2, seed=RANDOM_SEED)
     print("Dataset loaded.")
-    print(f"Train size: {len(dataset['train'])}")
-    print(f"Test size: {len(dataset['test'])}")
+    print(f"Size: {len(dataset['train'])}")
     print(f"Dataset structure: {dataset}")
     return dataset
 
@@ -87,7 +85,7 @@ if __name__ == "__main__":
     accuracy_trained = 0
     not_zero = 0
     log_interval = 100
-    for i, entry in enumerate(dataset["test"]):
+    for i, entry in enumerate(dataset["train"]):
         text = entry["text"]
         total_trained += 1
         try:
