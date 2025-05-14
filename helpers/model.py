@@ -26,6 +26,15 @@ def load_model(path:str, device:str, labels:dict) -> (AutoModelForSequenceClassi
     return pretrained_model, tokenizer
 
 def download_model(path:str, device:str, labels:dict, model_name:str, token:str) -> None:
+    """
+    download a model from huggingface
+
+    :param path: path to save the model to
+    :param device: device to load the model
+    :param labels: labels for the data #todo this may be unnecessary here
+    :param model_name: huggingface model name/slug
+    :param token: huggingface
+    """
     login(token)
     model, tokenizer = load_model(model_name, device, labels)
 

@@ -43,6 +43,12 @@ def clear_cache():
 
 # load the dataset
 def load_output_dataset(path):
+    """
+    load the dataset from a path
+
+    :param path: path to jsonl data
+    :return: dataset object
+    """
     dataset = load_dataset("json", data_files=path)
     print("Dataset loaded.")
     print(f"Size: {len(dataset['train'])}")
@@ -51,6 +57,9 @@ def load_output_dataset(path):
 
 
 def run():
+    """
+    run the model
+    """
     global config, logits
     # Load the model and tokenizer from the output directory
     base_model = AutoModelForSequenceClassification.from_pretrained(
