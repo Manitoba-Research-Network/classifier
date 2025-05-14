@@ -3,6 +3,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from datasets import load_dataset
 from peft import PeftModel, PeftConfig
 import yaml
+import argparse
 
 DEVICE = "cpu"
 MODEL_NAME = "meta-llama/Llama-3.2-1B"
@@ -56,7 +57,7 @@ def load_output_dataset(path):
     return dataset
 
 
-def run():
+def run(data_path):
     """
     run the model
     """
@@ -78,7 +79,7 @@ def run():
     print("Model and tokenizer loaded.")
 
     # load the data
-    dataset = load_output_dataset(DATA_PATH)
+    dataset = load_output_dataset(data_path)
     print("trained model predictions:")
     print("--------------------------")
 
@@ -121,10 +122,22 @@ if __name__ == "__main__":
     config = load_config()
     set_config(config)
 
+    #load command line args
+    parser = argparse.ArgumentParser(
+        prog="Basic Model Script",
+        description="Basic script for using model trained by classifier.py"
+    )
+    parser.add_argument('-d', '--data',
+                        help="path to jsonl data",
+                        type=str,
+                        default=DATA_PATH)
+
+    args = parser.parse_args()
     # clear cache
     clear_cache()
 
-    sus = run()
+
+    sus = run(args.data)
     print("Suspicious entries:")
     for entry in sus:
         print(f"id: {entry['id']} index: {entry['idx']}")
