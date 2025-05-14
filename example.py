@@ -87,6 +87,7 @@ def run():
     accuracy_trained = 0
     not_zero = 0
     log_interval = 100
+    suspicious = []
     for i, entry in enumerate(dataset["train"]):
         text = entry["text"]
         total_trained += 1
@@ -101,6 +102,7 @@ def run():
                 isCorrect_trained += 1
             if predictions != 0:
                 not_zero += 1
+                suspicious.append(entry)
 
             if (i) % log_interval == 0:
                 print(f"Processed: {total_trained}, Correct: {isCorrect_trained}, not0: {not_zero}", end="\r")
@@ -109,6 +111,8 @@ def run():
             total_trained -= 1
     accuracy_trained = isCorrect_trained / total_trained
     print(f"Accuracy: {accuracy_trained}")
+
+    return suspicious
 
 
 if __name__ == "__main__":
@@ -120,4 +124,9 @@ if __name__ == "__main__":
     # clear cache
     clear_cache()
 
-    run()
+    sus = run()
+    print("Suspicious entries:")
+    for entry in sus:
+        print(f"id: {entry['id']} index: {entry['idx']}")
+    if len(sus) ==0:
+        print("no suspicious entries found")
